@@ -4,10 +4,12 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 permissions:
   contents: read
   security-events: write
+  actions: read
 
 jobs:
   snyk-iac:
@@ -17,22 +19,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Snyk IaC scan (allow failures)
-        uses: snyk/actions/iac@v1
-        continue-on-error: true   # CRITICAL FIX
+      # ── Snyk IaC scan — blocks pipeline on findings ───────────────────────
+      - name: Run Snyk IaC scan
+        uses: snyk/actions/iac@master
+        # NO continue-on-error — pipeline must block on findings
         env:
-          SNYK_TOKEN: aed514c5-df9e-40d2-8cfc-51990b7a3cde
+          SNYK_TOKEN: aed514c5-df9e-40d2-8cfc-51990b7a3cd   # ← never hardcode token!
         with:
           args: >
-            test .
-            --severity-threshold=low
+            --severity-threshold=high
             --sarif-file-output=snyk-terraform.sarif
 
-      - name: Verify SARIF file
-        run: |
-          ls -la snyk-terraform.sarif
+      # ── Verify SARIF was generated ─────────────────────────────────────────
+      - name: Verify SARIF file exists
+        if: always()
+        run: ls -la snyk-terraform.sarif
 
-      - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+      # ── Upload to GitHub Security tab ──────────────────────────────────────
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4    # ← v3 to v4
+        if: always()
         with:
           sarif_file: snyk-terraform.sarif
