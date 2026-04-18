@@ -19,7 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── Snyk IaC scan — continue-on-error so SARIF always gets generated ──
+      # Snyk IaC scan — continue-on-error so SARIF always gets generated
       - name: Run Snyk IaC scan
         uses: snyk/actions/iac@master
         continue-on-error: true          # ← allows SARIF to be written even if scan finds issues
@@ -28,7 +28,7 @@ jobs:
         with:
           args: --severity-threshold=high
 
-      # ── Manually generate SARIF via Snyk CLI ──────────────────────────────
+      # Manually generate SARIF via Snyk CLI 
       - name: Install Snyk CLI
         run: npm install -g snyk
 
@@ -41,7 +41,7 @@ jobs:
             --severity-threshold=high \
             --sarif-file-output=snyk-terraform.sarif || true
 
-      # ── Create empty SARIF if still missing ───────────────────────────────
+      # Create empty SARIF if still missing
       - name: Ensure SARIF file exists
         run: |
           if [ ! -f snyk-terraform.sarif ]; then
@@ -67,14 +67,14 @@ jobs:
           fi
           ls -la snyk-terraform.sarif
 
-      # ── Upload to GitHub Security tab ──────────────────────────────────────
+      # Upload to GitHub Security tab
       - name: Upload SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: snyk-terraform.sarif
 
-      # ── Fail pipeline if Snyk found vulnerabilities ────────────────────────
+      # Fail pipeline if Snyk found vulnerabilities
       - name: Check scan results
         env:
           SNYK_TOKEN: aed514c5-df9e-40d2-8cfc-51990b7a3cde
