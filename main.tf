@@ -19,15 +19,6 @@ resource "aws_security_group" "open_ssh" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
-# EC2 Instance with Public IP (MEDIUM)
-resource "aws_instance" "public_ec2" {
-  ami           = "ami-0c02fb55956c7d316"
-  instance_type = "t2.micro"
-
-  associate_public_ip_address = true
-}
-
 # Unencrypted RDS with Hardcoded Credentials (CRITICAL)
 resource "aws_db_instance" "insecure_db" {
   allocated_storage   = 20
